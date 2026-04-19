@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mon Espace — AchkounE</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue:#1a56db;--blue2:#1240a8;--blue-light:#dbeafe;
+  --orange:#f97316;--bg:#f0f4ff;--white:#fff;
+  --text:#1e293b;--gray:#64748b;--green:#10b981;
+  --red:#ef4444;--border:#e2e8f0;
+  --shadow:0 4px 24px rgba(26,86,219,0.10);
+  --tab-h:64px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.ar{font-family:'Tajawal',sans-serif;}
+
+/* LOADER */
+#app-loader{position:fixed;inset:0;background:white;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;transition:opacity 0.3s ease;}
+#app-loader.hiding{opacity:0;pointer-events:none;}
+.loader-logo{font-weight:900;font-size:28px;color:var(--blue);}
+.loader-logo span{color:var(--orange);}
+.loader-sub{font-size:12px;color:#94a3b8;}
+.loader-err{font-size:12px;color:var(--red);display:none;margin-top:6px;text-align:center;padding:0 20px;}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid #bfdbfe;border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* LANG SWITCHER */
+.lang-switch{position:fixed;top:10px;left:10px;z-index:99998;display:flex;gap:6px;}
+.lang-btn{background:rgba(255,255,255,0.9);border:1.5px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text);font-family:'Poppins',sans-serif;}
+.lang-btn.active{background:var(--blue);color:white;border-color:var(--blue);}
+/* RTL mode */
+body.rtl{direction:rtl;font-family:'Tajawal',sans-serif;}
+body.rtl .ar-hide{display:none!important;}
+body.ltr .ar-show{display:none!important;}
+
+/* LOGIN */
+#login-screen{display:none;min-height:100vh;background:linear-gradient(160deg,var(--blue) 0%,var(--blue2) 60%,#0c2d7a 100%);flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;}
+#login-screen.on{display:flex;}
+#login-screen::before{content:'';position:absolute;top:-80px;right:-80px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,0.05);}
+#login-screen::after{content:'';position:absolute;bottom:-60px;left:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.04);}
+.login-brand{text-align:center;margin-bottom:36px;z-index:1;}
+.login-logo{font-weight:900;font-size:32px;color:white;}
+.login-logo span{color:#ffd700;}
+.login-tagline{font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;}
+.login-tagline-ar{font-family:'Tajawal',sans-serif;font-size:13px;color:rgba(255,255,255,0.5);margin-top:2px;direction:rtl;}
+.login-card{background:white;border-radius:24px;padding:28px 24px;width:100%;max-width:360px;box-shadow:0 24px 64px rgba(0,0,0,0.3);z-index:1;}
+.login-card h2{font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;}
+.login-card h2 span{font-family:'Tajawal',sans-serif;font-size:14px;color:var(--gray);font-weight:700;display:block;margin-top:2px;direction:rtl;}
+.login-card p{font-size:12px;color:var(--gray);margin-bottom:20px;margin-top:8px;line-height:1.6;}
+.input-wrap{position:relative;margin-bottom:14px;}
+.input-wrap label{display:block;font-size:10px;font-weight:700;color:var(--gray);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;}
+.input-wrap input{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--text);background:var(--bg);outline:none;letter-spacing:1px;-webkit-appearance:none;}
+.input-wrap input:focus{border-color:var(--blue);background:white;}
+.input-wrap input::placeholder{font-weight:400;letter-spacing:0;color:#cbd5e1;}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;border:none;border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-login:active{opacity:0.85;}
+.login-err{color:var(--red);font-size:12px;font-weight:600;text-align:center;margin-top:10px;min-height:18px;}
+
+/* APP */
+#app{display:none;}
+#app.on{display:block;}
+header{background:linear-gradient(135deg,var(--blue),var(--blue2));padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(26,86,219,0.3);}
+.h-logo{display:flex;align-items:center;gap:8px;}
+.h-logo-ico{background:var(--orange);border-radius:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.h-logo-txt{color:white;font-size:15px;font-weight:700;line-height:1.1;}
+.h-logo-txt small{display:block;font-size:10px;font-weight:400;opacity:0.7;}
+.btn-logout{background:rgba(255,255,255,0.15);border:none;border-radius:8px;padding:7px 12px;color:white;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;cursor:pointer;}
+
+/* TAB BAR */
+.tab-bar{position:fixed;bottom:0;left:0;right:0;height:var(--tab-h);background:white;display:flex;align-items:stretch;box-shadow:0 -2px 16px rgba(26,86,219,0.10);z-index:200;border-top:1px solid var(--border);}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;padding:0;transition:color 0.2s;color:var(--gray);font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;position:relative;}
+.tab-btn .tab-ico{font-size:20px;transition:transform 0.2s;}
+.tab-btn.active{color:var(--blue);}
+.tab-btn.active .tab-ico{transform:scale(1.18);}
+.tab-btn.active::after{content:'';position:absolute;bottom:0;left:25%;right:25%;height:3px;background:var(--blue);border-radius:3px 3px 0 0;}
+.tab-btn .tab-badge{position:absolute;top:8px;right:calc(50% - 16px);background:var(--orange);color:white;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 4px;}
+.tab-btn .tab-badge.on{display:flex;}
+
+/* MAIN */
+.main{padding:14px;max-width:560px;margin:0 auto;padding-bottom:calc(var(--tab-h) + 14px);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* PROFIL CARD */
+.profil-card{background:white;border-radius:20px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px;display:flex;align-items:center;gap:14px;}
+.profil-avatar{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,var(--blue),var(--blue2));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.profil-info{flex:1;}
+.profil-nom{font-weight:800;font-size:16px;color:var(--text);}
+.profil-serial{font-size:11px;font-weight:700;color:var(--blue);margin-top:2px;}
+.profil-tel{font-size:12px;color:var(--gray);margin-top:2px;}
+.profil-badge{background:var(--blue-light);color:var(--blue);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;display:inline-block;margin-top:4px;}
+
+/* ALERT CARD */
+.alert-card{border-radius:16px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;}
+.alert-card.blue{background:linear-gradient(135deg,#dbeafe,#eff6ff);border:1px solid #bfdbfe;}
+.alert-card.green{background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:1px solid #bbf7d0;}
+.alert-card.orange{background:linear-gradient(135deg,#ffedd5,#fff7ed);border:1px solid #fed7aa;}
+.alert-card.gray{background:#f8fafc;border:1px solid var(--border);}
+.alert-ico{font-size:26px;flex-shrink:0;}
+.alert-body{flex:1;}
+.alert-title{font-weight:800;font-size:13px;color:var(--text);}
+.alert-sub{font-size:11px;color:var(--gray);margin-top:2px;}
+.alert-sub.ar{font-family:'Tajawal',sans-serif;font-size:12px;direction:rtl;}
+
+/* SECTION TITLE */
+.section-title{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.section-title-ico{background:var(--bg);border-radius:8px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.section-title-txt{font-size:14px;font-weight:800;color:var(--text);}
+.section-title-txt small{font-family:'Tajawal',sans-serif;font-size:12px;color:var(--gray);font-weight:700;margin-right:4px;}
+
+/* RÉSUMÉ PAIEMENT */
+.resume-card{background:white;border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px;}
+.resume-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.resume-row:last-of-type{border-bottom:none;}
+.resume-label{color:var(--gray);font-weight:600;font-size:12px;}
+.resume-val{font-weight:800;font-size:13px;}
+.resume-val.green{color:var(--green);}
+.resume-val.red{color:var(--red);}
+.resume-val.blue{color:var(--blue);}
+.pbar-wrap{margin-top:10px;}
+.pbar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--gray);margin-bottom:5px;font-weight:600;}
+.pbar{height:8px;background:var(--border);border-radius:10px;overflow:hidden;}
+.pfill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--green),#34d399);transition:width 0.6s ease;}
+
+/* PROGRESSION PERMIS */
+.permis-card{background:white;border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px;}
+.permis-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.permis-title{font-size:14px;font-weight:800;color:var(--text);}
+.permis-pct-badge{background:var(--blue-light);color:var(--blue);font-weight:900;font-size:14px;padding:4px 12px;border-radius:20px;}
+.permis-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.pmini-box{background:var(--bg);border-radius:12px;padding:10px 6px;text-align:center;}
+.pmini-val{font-size:20px;font-weight:900;color:var(--blue);}
+.pmini-val.green{color:var(--green);}
+.pmini-val.orange{color:var(--orange);}
+.pmini-lbl{font-size:9px;color:var(--gray);font-weight:700;text-transform:uppercase;margin-top:2px;line-height:1.2;}
+.pmini-ar{font-family:'Tajawal',sans-serif;font-size:10px;color:var(--gray);}
+.permis-pbar{height:10px;background:var(--border);border-radius:10px;overflow:hidden;}
+.permis-pfill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--blue),#3b82f6);transition:width 0.6s ease;}
+
+/* SÉANCES */
+.seances-card{background:white;border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px;}
+.seance-item{background:var(--bg);border-radius:12px;padding:13px 14px;margin-bottom:8px;border-left:4px solid var(--blue);display:flex;align-items:center;gap:12px;}
+.seance-item:last-child{margin-bottom:0;}
+.seance-item.past{border-left-color:#cbd5e1;opacity:0.65;}
+.seance-item.pending{border-left-color:var(--orange);}
+.seance-date-box{background:white;border-radius:10px;padding:6px 10px;text-align:center;min-width:46px;box-shadow:0 2px 8px rgba(26,86,219,0.08);}
+.seance-date-box .s-day{font-size:18px;font-weight:900;color:var(--blue);line-height:1;}
+.seance-date-box .s-mon{font-size:9px;font-weight:700;color:var(--gray);text-transform:uppercase;}
+.seance-item.past .seance-date-box .s-day{color:var(--gray);}
+.seance-item.pending .seance-date-box .s-day{color:var(--orange);}
+.seance-info{flex:1;}
+.seance-heure{font-weight:800;font-size:14px;color:var(--text);}
+.seance-voiture{font-size:11px;color:var(--gray);margin-top:2px;}
+.seance-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.seance-badge.upcoming{background:#dcfce7;color:#166534;}
+.seance-badge.today{background:#fef9c3;color:#854d0e;}
+.seance-badge.pending{background:#ffedd5;color:#9a3412;}
+.seance-badge.payant{background:#fce7f3;color:#9d174d;}
+.empty-msg{text-align:center;padding:24px 16px;color:var(--gray);font-size:13px;}
+.empty-msg .em-ico{font-size:32px;margin-bottom:8px;}
+.empty-msg .em-ar{font-family:'Tajawal',sans-serif;font-size:12px;margin-top:4px;}
+
+/* SÉANCES STATS */
+.seances-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stat-box{background:white;border-radius:16px;padding:14px;box-shadow:var(--shadow);text-align:center;}
+.stat-val{font-size:28px;font-weight:900;color:var(--blue);}
+.stat-lbl{font-size:10px;color:var(--gray);font-weight:700;margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;}
+.stat-lbl-ar{font-family:'Tajawal',sans-serif;font-size:11px;color:var(--gray);margin-top:1px;}
+.stat-box.green .stat-val{color:var(--green);}
+.stat-box.orange .stat-val{color:var(--orange);}
+
+/* STATUT */
+.statut-card{background:white;border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px;}
+.statut-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.statut-row:last-child{border-bottom:none;}
+.statut-ico{font-size:20px;width:32px;text-align:center;flex-shrink:0;}
+.statut-body{flex:1;}
+.statut-lbl{font-size:12px;font-weight:700;color:var(--gray);}
+.statut-val{font-size:13px;font-weight:800;color:var(--text);margin-top:2px;}
+
+/* ===== RÉSERVATION ===== */
+.resa-btn-wrap{margin-bottom:14px;}
+.btn-reserver{width:100%;padding:15px;background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;border:none;border-radius:16px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(26,86,219,0.3);}
+.btn-reserver:active{opacity:0.85;transform:scale(0.98);}
+.btn-reserver:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:flex-end;justify-content:center;}
+.modal-overlay.on{display:flex;}
+.modal-sheet{background:white;border-radius:24px 24px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;padding:20px 16px 32px;animation:slideUp 0.3s ease;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;}
+.modal-subtitle{font-size:12px;color:var(--gray);margin-bottom:20px;}
+.modal-close{position:absolute;top:16px;right:16px;background:var(--bg);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+/* CALENDRIER */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.cal-nav-btn{background:var(--bg);border:none;border-radius:10px;width:36px;height:36px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--text);}
+.cal-nav-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.cal-month{font-size:15px;font-weight:800;color:var(--text);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px;}
+.cal-day-lbl{text-align:center;font-size:10px;font-weight:700;color:var(--gray);padding:4px 0;text-transform:uppercase;}
+.cal-day{text-align:center;padding:8px 4px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:2px solid transparent;transition:all 0.15s;}
+.cal-day.empty{cursor:default;}
+.cal-day.past{color:#cbd5e1;cursor:not-allowed;}
+.cal-day.today{border-color:var(--blue);color:var(--blue);}
+.cal-day.available{color:var(--text);background:var(--bg);}
+.cal-day.available:hover{background:var(--blue-light);color:var(--blue);}
+.cal-day.selected{background:var(--blue);color:white;border-color:var(--blue);}
+.cal-day.full{background:#fee2e2;color:#ef4444;cursor:not-allowed;}
+
+/* CRÉNEAUX */
+.creneaux-section{margin-bottom:16px;}
+.creneaux-label{font-size:12px;font-weight:700;color:var(--gray);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.3px;}
+.creneaux-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.creneau-btn{padding:10px 6px;border-radius:12px;border:2px solid var(--border);background:white;font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all 0.15s;color:var(--text);}
+.creneau-btn:disabled{background:#f8fafc;color:#cbd5e1;cursor:not-allowed;border-color:#f1f5f9;}
+.creneau-btn.selected{background:var(--blue);color:white;border-color:var(--blue);}
+.creneau-btn.available:hover{border-color:var(--blue);color:var(--blue);}
+.creneau-btn .cr-sub{font-size:9px;font-weight:600;margin-top:2px;opacity:0.75;}
+.creneau-btn.urgent{border-color:#f97316;}
+.creneau-btn.urgent .cr-sub{color:#f97316;}
+.creneau-btn.urgent.selected{background:var(--orange);border-color:var(--orange);}
+
+/* VOITURES */
+.voitures-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.voiture-btn{padding:12px;border-radius:12px;border:2px solid var(--border);background:white;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.15s;}
+.voiture-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.voiture-btn.selected{border-color:var(--blue);background:var(--blue-light);color:var(--blue);}
+.voiture-btn .v-ico{font-size:18px;}
+
+/* CONFIRMATION RESA */
+.confirm-box{background:var(--bg);border-radius:16px;padding:14px;margin-bottom:16px;}
+.confirm-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.confirm-row:last-child{border-bottom:none;}
+.confirm-lbl{color:var(--gray);font-weight:600;font-size:12px;}
+.confirm-val{font-weight:800;color:var(--text);}
+.confirm-val.orange{color:var(--orange);}
+.confirm-val.red{color:var(--red);}
+
+/* CHECKBOX URGENT */
+.urgent-checkbox{display:flex;align-items:flex-start;gap:10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px;margin-bottom:14px;cursor:pointer;}
+.urgent-checkbox input[type=checkbox]{width:18px;height:18px;accent-color:var(--orange);flex-shrink:0;margin-top:1px;cursor:pointer;}
+.urgent-checkbox-label{font-size:12px;color:#9a3412;font-weight:600;line-height:1.5;}
+.urgent-checkbox-label strong{display:block;font-size:13px;color:var(--orange);margin-bottom:2px;}
+
+/* TIMER ANNULATION */
+.cancel-timer{display:flex;align-items:center;gap:8px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 12px;margin-top:6px;font-size:11px;color:#9a3412;font-weight:600;}
+.cancel-timer .timer-val{font-weight:900;font-size:13px;color:var(--orange);font-variant-numeric:tabular-nums;}
+.btn-cancel-resa{background:#fee2e2;color:var(--red);border:none;border-radius:8px;padding:6px 12px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;cursor:pointer;margin-left:auto;}
+.btn-cancel-resa:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* ÉTAPES */
+.steps{display:flex;align-items:center;gap:6px;margin-bottom:20px;}
+.step{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background 0.3s;}
+.step.done{background:var(--blue);}
+.step.active{background:var(--blue-light);}
+.step-label{font-size:11px;color:var(--gray);font-weight:600;margin-bottom:10px;}
+
+/* PAIEMENT SOLDE */
+.solde-card{border-radius:20px;padding:20px;box-shadow:var(--shadow);margin-bottom:14px;background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;position:relative;overflow:hidden;}
+.solde-card::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.07);}
+.solde-card::after{content:'';position:absolute;bottom:-30px;left:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.05);}
+.solde-label{font-size:11px;font-weight:700;opacity:0.75;text-transform:uppercase;letter-spacing:0.5px;}
+.solde-label-ar{font-family:'Tajawal',sans-serif;font-size:12px;opacity:0.6;}
+.solde-montant{font-size:36px;font-weight:900;margin:6px 0 2px;line-height:1;}
+.solde-montant span{font-size:18px;font-weight:700;opacity:0.8;}
+.solde-row{display:flex;gap:16px;margin-top:14px;z-index:1;position:relative;}
+.solde-mini{flex:1;background:rgba(255,255,255,0.12);border-radius:12px;padding:10px 12px;}
+.solde-mini-val{font-size:16px;font-weight:900;}
+.solde-mini-lbl{font-size:10px;opacity:0.75;font-weight:600;margin-top:2px;}
+.solde-pbar-wrap{margin-top:14px;z-index:1;position:relative;}
+.solde-pbar-label{display:flex;justify-content:space-between;font-size:11px;opacity:0.8;font-weight:600;margin-bottom:6px;}
+.solde-pbar{height:8px;background:rgba(255,255,255,0.2);border-radius:10px;overflow:hidden;}
+.solde-pfill{height:100%;border-radius:10px;background:linear-gradient(90deg,#a7f3d0,#34d399);transition:width 0.6s ease;}
+
+/* HISTORIQUE */
+.historique-card{background:white;border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px;}
+.versement-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.versement-item:last-child{border-bottom:none;}
+.versement-num{width:28px;height:28px;border-radius:50%;background:var(--blue-light);color:var(--blue);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.versement-body{flex:1;}
+.versement-date{font-size:12px;color:var(--gray);font-weight:600;}
+.versement-note{font-size:11px;color:var(--gray);margin-top:1px;font-style:italic;}
+.versement-montant{font-size:15px;font-weight:900;color:var(--green);}
+.versement-montant span{font-size:10px;font-weight:700;}
+
+/* PDF BTN */
+.btn-pdf{width:100%;padding:14px;background:linear-gradient(135deg,var(--orange),#ea580c);color:white;border:none;border-radius:14px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;box-shadow:0 4px 14px rgba(249,115,22,0.3);}
+.btn-pdf:active{opacity:0.85;}
+
+/* CONTACT */
+.contact-card{background:white;border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px;}
+.contact-btns{display:flex;gap:10px;}
+.btn-contact{flex:1;padding:13px 10px;border:none;border-radius:12px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;text-decoration:none;}
+.btn-contact .ico{font-size:22px;}
+.btn-wa{background:#dcfce7;color:#166534;}
+.btn-tel{background:#dbeafe;color:var(--blue2);}
+.contact-info{background:var(--bg);border-radius:14px;padding:14px;margin-top:12px;}
+.contact-info-row{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:var(--text);font-weight:600;}
+.contact-info-row .ci-ico{font-size:16px;width:24px;text-align:center;}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--tab-h) + 14px);left:50%;transform:translateX(-50%) translateY(120px);background:var(--text);color:white;padding:11px 22px;border-radius:30px;font-size:12px;font-weight:600;z-index:999;white-space:nowrap;transition:transform 0.3s ease;}
+.toast.on{transform:translateX(-50%) translateY(0);}
+
+/* FOOTER */
+.footer{text-align:center;padding:8px;font-size:10px;color:#94a3b8;}
+.footer span{color:var(--orange);font-weight:700;}
+
+/* BTN PRIMARY */
+.btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;border:none;border-radius:14px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-primary:active:not(:disabled){opacity:0.85;}
+.modal-sheet{position:relative;}
+</style>
+</head>
+<body>
+
+<!-- LANG SWITCHER (visible always) -->
+<div class="lang-switch" id="lang-switch">
+  <button class="lang-btn active" id="btn-lang-fr" onclick="setLang('fr')">FR</button>
+  <button class="lang-btn" id="btn-lang-ar" onclick="setLang('ar')">ع</button>
+</div>
+
+<!-- LOADER -->
+<div id="app-loader">
+  <div class="loader-logo">Achkoun<span>E</span></div>
+  <div class="loader-sub" id="loader-sub-text"><span class="spinner"></span><span class="ar-hide">Chargement...</span><span class="ar-show">جارٍ التحميل...</span></div>
+  <div class="loader-err" id="loader-err">
+    <span class="ar-hide">Erreur de connexion. Vérifiez votre réseau.</span>
+    <span class="ar-show">خطأ في الاتصال. تحقق من الشبكة.</span>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-brand">
+    <div class="login-logo">Achkoun<span>E</span></div>
+    <div class="login-tagline ar-hide">Espace Élève — Espace Conducteur</div>
+    <div class="login-tagline ar-show" style="font-family:'Tajawal',sans-serif;">فضاء التلميذ — فضاء السائق</div>
+    <div class="login-tagline-ar ar-hide">فضاء التلميذ</div>
+  </div>
+  <div class="login-card">
+    <h2><span class="ar-hide">Connexion</span><span class="ar-show" style="font-family:'Tajawal',sans-serif;">تسجيل الدخول</span> <span>تسجيل الدخول / Connexion</span></h2>
+    <p class="ar-hide">Entrez votre numéro d'authentification pour accéder à votre espace.</p>
+    <p class="ar-show" style="font-family:'Tajawal',sans-serif;direction:rtl;">أدخل رقم المصادقة الخاص بك للوصول إلى فضائك.</p>
+    <div class="input-wrap">
+      <label><span class="ar-hide">N° Authentification</span><span class="ar-show" style="font-family:'Tajawal',sans-serif;">رقم المصادقة</span></label>
+      <input type="text" id="serial-input" placeholder="Ex: Ai6268" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <button class="btn-login" id="login-btn">
+      <span class="ar-hide">Accéder à mon espace</span>
+      <span class="ar-show" style="font-family:'Tajawal',sans-serif;">الدخول إلى فضائي</span>
+      <span>🚗</span>
+    </button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="h-logo">
+      <div class="h-logo-ico">🚗</div>
+      <div class="h-logo-txt">
+        <span class="ar-hide">Mon Espace</span><span class="ar-show" style="font-family:'Tajawal',sans-serif;">فضاءي</span>
+        <small class="ar ar-hide">فضاءي</small>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">
+      <span class="ar-hide">Déconnexion</span>
+      <span class="ar-show" style="font-family:'Tajawal',sans-serif;">خروج</span>
+    </button>
+  </header>
+
+  <div class="main">
+
+    <!-- ===== ONGLET ACCUEIL ===== -->
+    <div class="tab-panel active" id="panel-accueil">
+      <div class="profil-card">
+        <div class="profil-avatar">👤</div>
+        <div class="profil-info">
+          <div class="profil-nom" id="p-nom">—</div>
+          <div class="profil-serial" id="p-serial">N° Auth : —</div>
+          <div class="profil-tel" id="p-tel"></div>
+          <div class="profil-badge ar">طالب قيادة</div>
+        </div>
+      </div>
+      <div id="next-seance-alert" style="display:none;"></div>
+      <div class="permis-card" id="permis-section" style="display:none;">
+        <div class="permis-header">
+          <div class="permis-title">📊 Progression permis <small class="ar" style="font-size:12px;color:var(--gray);"> — تقدم الرخصة</small></div>
+          <div class="permis-pct-badge" id="permis-pct">0%</div>
+        </div>
+        <div class="permis-stats">
+          <div class="pmini-box"><div class="pmini-val green" id="ps-effectuees">—</div><div class="pmini-lbl">Effectuées</div><div class="pmini-ar">منجزة</div></div>
+          <div class="pmini-box"><div class="pmini-val orange" id="ps-avenir">—</div><div class="pmini-lbl">À venir</div><div class="pmini-ar">قادمة</div></div>
+          <div class="pmini-box"><div class="pmini-val" id="ps-total">—</div><div class="pmini-lbl">Total prévu</div><div class="pmini-ar">المجموع</div></div>
+        </div>
+        <div class="permis-pbar"><div class="permis-pfill" id="permis-pfill" style="width:0%"></div></div>
+      </div>
+      <div class="resume-card" id="resume-section" style="display:none;">
+        <div class="section-title" style="margin-bottom:12px;">
+          <div class="section-title-ico">💳</div>
+          <div class="section-title-txt">Résumé paiement <small>— ملخص الدفع</small></div>
+        </div>
+        <div class="resume-row"><span class="resume-label">Prix total · السعر الكلي</span><span class="resume-val blue" id="r-prix">—</span></div>
+        <div class="resume-row"><span class="resume-label">Montant payé · المدفوع</span><span class="resume-val green" id="r-paye">—</span></div>
+        <div class="resume-row"><span class="resume-label">Reste à payer · المتبقي</span><span class="resume-val red" id="r-reste">—</span></div>
+        <div class="pbar-wrap">
+          <div class="pbar-label"><span>Paiement</span><span id="r-pct">0%</span></div>
+          <div class="pbar"><div class="pfill" id="r-pfill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="footer">Propulsé par <span>AchkounE</span> © 2025</div>
+    </div>
+
+    <!-- ===== ONGLET SÉANCES ===== -->
+    <div class="tab-panel" id="panel-seances">
+      <div class="seances-stats">
+        <div class="stat-box green"><div class="stat-val" id="stat-effectuees">—</div><div class="stat-lbl">Effectuées</div><div class="stat-lbl-ar ar">منجزة</div></div>
+        <div class="stat-box orange"><div class="stat-val" id="stat-avenir">—</div><div class="stat-lbl">À venir</div><div class="stat-lbl-ar ar">قادمة</div></div>
+      </div>
+
+      <!-- Statut permis -->
+      <div class="statut-card" id="statut-section" style="display:none;">
+        <div class="section-title" style="margin-bottom:4px;">
+          <div class="section-title-ico">🏆</div>
+          <div class="section-title-txt">Statut permis <small>— حالة الرخصة</small></div>
+        </div>
+        <div class="statut-row"><div class="statut-ico">📋</div><div class="statut-body"><div class="statut-lbl">Catégorie</div><div class="statut-val" id="st-categorie">—</div></div></div>
+        <div class="statut-row"><div class="statut-ico">🔵</div><div class="statut-body"><div class="statut-lbl">Statut · الحالة</div><div class="statut-val" id="st-statut">—</div></div></div>
+        <div class="statut-row"><div class="statut-ico">📅</div><div class="statut-body"><div class="statut-lbl">Date d'inscription</div><div class="statut-val" id="st-inscription">—</div></div></div>
+      </div>
+
+      <!-- Ma réservation en cours -->
+      <div id="my-resa-card" style="display:none;" class="seances-card">
+        <div class="section-title">
+          <div class="section-title-ico">⏳</div>
+          <div class="section-title-txt">Ma réservation <small>— حجزي</small></div>
+        </div>
+        <div id="my-resa-content"></div>
+      </div>
+
+      <!-- Bouton réserver -->
+      <div class="resa-btn-wrap">
+        <button class="btn-reserver" id="btn-ouvrir-resa" onclick="ouvrirModalResa()">
+          <span>➕</span> Réserver une séance
+        </button>
+        <div style="text-align:center;font-size:10px;color:var(--gray);margin-top:6px;" id="resa-hint">Horaires : 8h30–12h30 · 14h30–19h00</div>
+      </div>
+
+      <!-- Prochaines séances -->
+      <div class="seances-card">
+        <div class="section-title">
+          <div class="section-title-ico">📅</div>
+          <div class="section-title-txt">Prochaines séances <small>— حصص القيادة</small></div>
+        </div>
+        <div id="seances-list"><div class="empty-msg"><span class="spinner"></span></div></div>
+      </div>
+
+      <!-- Séances passées -->
+      <div class="seances-card" id="past-seances-card" style="display:none;">
+        <div class="section-title" style="cursor:pointer;" onclick="togglePast()">
+          <div class="section-title-ico">✅</div>
+          <div class="section-title-txt">Séances effectuées <small>— الحصص المنجزة</small></div>
+          <span id="past-toggle-ico" style="margin-left:auto;font-size:12px;color:var(--gray);">▼ Voir</span>
+        </div>
+        <div id="past-list" style="display:none;"></div>
+      </div>
+      <div class="footer">Propulsé par <span>AchkounE</span> © 2025</div>
+    </div>
+
+    <!-- ===== ONGLET PAIEMENTS ===== -->
+    <div class="tab-panel" id="panel-paiements">
+      <div class="solde-card" id="solde-section" style="display:none;">
+        <div style="position:relative;z-index:1;">
+          <div class="solde-label">Reste à payer</div>
+          <div class="solde-label-ar">المبلغ المتبقي</div>
+          <div class="solde-montant" id="sol-reste">— <span>DH</span></div>
+          <div class="solde-row">
+            <div class="solde-mini"><div class="solde-mini-val" id="sol-prix">—</div><div class="solde-mini-lbl">Prix total</div></div>
+            <div class="solde-mini"><div class="solde-mini-val" id="sol-paye">—</div><div class="solde-mini-lbl">Payé</div></div>
+          </div>
+          <div class="solde-pbar-wrap">
+            <div class="solde-pbar-label"><span>Progression paiement</span><span id="sol-pct">0%</span></div>
+            <div class="solde-pbar"><div class="solde-pfill" id="sol-pfill" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div id="solde-empty" style="display:none;">
+        <div class="empty-msg" style="background:white;border-radius:20px;box-shadow:var(--shadow);margin-bottom:14px;">
+          <div class="em-ico">💳</div>Aucune donnée de paiement<div class="em-ar">لا توجد بيانات دفع</div>
+        </div>
+      </div>
+      <div class="historique-card" id="historique-section" style="display:none;">
+        <div class="section-title" style="margin-bottom:12px;">
+          <div class="section-title-ico">📋</div>
+          <div class="section-title-txt">Historique versements <small>— سجل الدفعات</small></div>
+        </div>
+        <div id="versements-list"></div>
+      </div>
+      <button class="btn-pdf" id="btn-pdf-recu" style="display:none;" onclick="genererPdfRecu()">🖨️ Télécharger le reçu de paiement</button>
+      <div class="footer">Propulsé par <span>AchkounE</span> © 2025</div>
+    </div>
+
+    <!-- ===== ONGLET CONTACT ===== -->
+    <div class="tab-panel" id="panel-contact">
+      <div class="contact-card">
+        <div class="section-title">
+          <div class="section-title-ico">📞</div>
+          <div class="section-title-txt">Contacter l'auto-école <small>— التواصل</small></div>
+        </div>
+        <div class="contact-btns">
+          <a href="https://wa.me/212661372227" target="_blank" class="btn-contact btn-wa" id="btn-wa"><span class="ico">💬</span><span>WhatsApp</span></a>
+          <a href="tel:+212661372227" class="btn-contact btn-tel" id="btn-tel"><span class="ico">📞</span><span>Appeler</span></a>
+        </div>
+        <div class="contact-info">
+          <div class="contact-info-row"><span class="ci-ico">🕐</span> Lun–Sam : 08h00 – 18h00</div>
+          <div class="contact-info-row"><span class="ci-ico">📍</span> Maroc</div>
+        </div>
+      </div>
+      <div class="footer">Propulsé par <span>AchkounE</span> © 2025</div>
+    </div>
+
+  </div>
+
+  <!-- TAB BAR -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" id="tab-accueil" onclick="switchTab('accueil')">
+      <span class="tab-ico">🏠</span>
+      <span class="ar-hide">Accueil</span><span class="ar-show">الرئيسية</span>
+    </button>
+    <button class="tab-btn" id="tab-seances" onclick="switchTab('seances')">
+      <span class="tab-ico">📅</span>
+      <span class="tab-badge" id="badge-seances">0</span>
+      <span class="ar-hide">Séances</span><span class="ar-show">الحصص</span>
+    </button>
+    <button class="tab-btn" id="tab-paiements" onclick="switchTab('paiements')">
+      <span class="tab-ico">💳</span>
+      <span class="tab-badge" id="badge-paiements">!</span>
+      <span class="ar-hide">Paiements</span><span class="ar-show">الدفع</span>
+    </button>
+    <button class="tab-btn" id="tab-contact" onclick="switchTab('contact')">
+      <span class="tab-ico">📞</span>
+      <span class="ar-hide">Contact</span><span class="ar-show">التواصل</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ===== MODAL RÉSERVATION ===== -->
+<div class="modal-overlay" id="modal-resa">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="fermerModalResa()">✕</button>
+    <div id="modal-resa-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getFirestore, collection, query, where, getDocs,
+  addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+var firebaseConfig = {
+  apiKey: "AIzaSyCeqD1MEDQyYFViCRG88xqjBcnsLtcsTa0",
+  authDomain: "achkoune-app.firebaseapp.com",
+  projectId: "achkoune-app",
+  storageBucket: "achkoune-app.firebasestorage.app",
+  messagingSenderId: "25360989092",
+  appId: "1:25360989092:web:3f762f64c360884c50df31"
+};
+
+var app = initializeApp(firebaseConfig);
+var db  = getFirestore(app);
+
+var AUTOECOLE_TEL = "212661372227";
+var MOIS     = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+var MOIS_FULL= ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+var JOURS    = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+
+/* ─── CRÉNEAUX ─── */
+/* Matin 8h30–12h30 : 8h30,9h30,10h30,11h30 (fin 12h30) */
+/* Après-midi 14h30–19h : 14h30,15h30,16h30,17h30,18h00 (fin 18h30 ou 19h) */
+var CRENEAUX_MATIN = ["08:30","09:30","10:30","11:30"];
+var CRENEAUX_APM   = ["14:30","15:30","16:30","17:30","18:00"];
+var ALL_CRENEAUX   = CRENEAUX_MATIN.concat(CRENEAUX_APM);
+
+/* Voitures disponibles */
+var VOITURES = ["1","2"];
+
+var currentEleve  = null;
+var currentClient = null;
+var allSeances    = [];
+var pastOpen      = false;
+var myResa        = null;   /* réservation en attente du candidat */
+var cancelTimerInt= null;   /* setInterval pour le compte à rebours */
+
+/* ─── MODAL STATE ─── */
+var resaStep     = 1;       /* 1=calendrier 2=créneau 3=voiture 4=confirmation */
+var resaDate     = null;    /* Date JS sélectionnée */
+var resaDateKey  = null;    /* "YYYY-M-D" */
+var resaCreneau  = null;    /* "08:30" */
+var resaVoiture  = null;    /* "1" */
+var resaIsUrgent = false;
+var resaUrgentOk = false;
+var allResas     = [];      /* toutes les réservations Firestore pour anti-doublon */
+var calYear      = null;
+var calMonth     = null;
+
+/* ─── LANGUE ─── */
+var currentLang = localStorage.getItem("achkoune_lang") || "fr";
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem("achkoune_lang", lang);
+  if(lang === "ar") {
+    document.body.classList.add("rtl");
+    document.body.classList.remove("ltr");
+  } else {
+    document.body.classList.add("ltr");
+    document.body.classList.remove("rtl");
+  }
+  document.getElementById("btn-lang-fr").classList.toggle("active", lang==="fr");
+  document.getElementById("btn-lang-ar").classList.toggle("active", lang==="ar");
+}
+window.setLang = setLang;
+
+/* Apply saved language on load */
+setLang(currentLang);
+
+/* ─── LOADER HIDE ─── */
+function hideLoader() {
+  var el = document.getElementById("app-loader");
+  el.classList.add("hiding");
+  setTimeout(function(){ el.style.display = "none"; }, 350);
+}
+
+function showLoaderError() {
+  document.getElementById("loader-sub-text").style.display = "none";
+  document.getElementById("loader-err").style.display = "block";
+}
+
+/* Timeout de sécurité : si Firebase plante, on masque le loader après 8s */
+var loaderTimeout = setTimeout(function() {
+  hideLoader();
+  document.getElementById("login-screen").className = "on";
+}, 8000);
+
+/* ─── INIT ─── */
+clearTimeout(loaderTimeout);
+hideLoader();
+document.getElementById("login-screen").className = "on";
+
+/* ─── TABS ─── */
+window.switchTab = function(tab) {
+  document.querySelectorAll(".tab-panel").forEach(function(p){ p.classList.remove("active"); });
+  document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
+  document.getElementById("panel-"+tab).classList.add("active");
+  document.getElementById("tab-"+tab).classList.add("active");
+};
+
+/* ─── LOGIN ─── */
+document.getElementById("login-btn").onclick = doLogin;
+document.getElementById("serial-input").addEventListener("keydown", function(e){ if(e.key==="Enter") doLogin(); });
+
+async function doLogin() {
+  var serial = document.getElementById("serial-input").value.trim();
+  var errEl  = document.getElementById("login-err");
+  errEl.textContent = "";
+  if(!serial){
+    errEl.innerHTML = "<span class='ar-hide'>Entrez votre num\u00e9ro d'authentification</span><span class='ar-show' style=\"font-family:'Tajawal',sans-serif;\">أدخل رقم المصادقة</span>";
+    return;
+  }
+  document.getElementById("login-btn").innerHTML = '<span class="spinner"></span> Recherche...';
+  document.getElementById("login-btn").disabled = true;
+  try {
+    var q = query(collection(db,"planning_conducteurs"), where("serial","==",serial));
+    var snap = await getDocs(q);
+    if(snap.empty) {
+      var allSnap = await getDocs(collection(db,"planning_conducteurs"));
+      var found = null;
+      allSnap.forEach(function(d){ var data=d.data(); if((data.serial||"").toLowerCase()===serial.toLowerCase()){ found=data; found.id=d.id; } });
+      if(!found){ errEl.innerHTML="<span class='ar-hide'>Num\u00e9ro introuvable.</span><span class='ar-show' style=\"font-family:'Tajawal',sans-serif;\">الرقم غير موجود.</span>"; resetLoginBtn(); return; }
+      currentEleve = found;
+    } else {
+      snap.forEach(function(d){ currentEleve=d.data(); currentEleve.id=d.id; });
+    }
+    await loadClientData(currentEleve.serial);
+    enterApp();
+  } catch(e) {
+    errEl.innerHTML = "<span class='ar-hide'>Erreur de connexion.</span><span class='ar-show' style=\"font-family:'Tajawal',sans-serif;\">خطأ في الاتصال.</span>";
+    console.error(e); resetLoginBtn();
+  }
+}
+
+function resetLoginBtn() {
+  document.getElementById("login-btn").innerHTML = "<span class='ar-hide'>Acc\u00e9der \u00e0 mon espace</span><span class='ar-show' style=\"font-family:'Tajawal',sans-serif;\">الدخول إلى فضائي</span><span>🚗</span>";
+  document.getElementById("login-btn").disabled = false;
+}
+
+async function loadClientData(serial) {
+  try {
+    var q = query(collection(db,"clients"), where("serial","==",serial));
+    var snap = await getDocs(q);
+    if(!snap.empty) {
+      snap.forEach(function(d){ currentClient=d.data(); currentClient.id=d.id; });
+    } else {
+      var allSnap = await getDocs(collection(db,"clients"));
+      allSnap.forEach(function(d){ var data=d.data(); if((data.serial||"").toLowerCase()===serial.toLowerCase()){ currentClient=data; currentClient.id=d.id; } });
+    }
+  } catch(e) { console.warn("loadClientData:", e.message); }
+}
+
+async function enterApp() {
+  document.getElementById("login-screen").className = "";
+  document.getElementById("app").className = "on";
+  switchTab("accueil");
+  var src = currentClient || currentEleve;
+  var nomAff = src.prenom ? src.prenom+" "+(src.nom||"") : (src.nom||"—");
+  document.getElementById("p-nom").textContent    = nomAff;
+  document.getElementById("p-serial").textContent = "N° Auth : "+(src.serial||"—");
+  if(src.tel) document.getElementById("p-tel").textContent = "📱 "+src.tel;
+  document.getElementById("btn-wa").href  = "https://wa.me/"+AUTOECOLE_TEL;
+  document.getElementById("btn-tel").href = "tel:+"+AUTOECOLE_TEL;
+  renderResumePaiement();
+  renderPaiements();
+  renderStatutPermis();
+  await loadSeances();
+  await loadMyResa();
+}
+
+/* ─── PAIEMENT ─── */
+function renderResumePaiement() {
+  if(!currentClient) return;
+  var c=currentClient, prix=Number(c.prix)||0, paye=0;
+  if(c.avances) for(var i=0;i<c.avances.length;i++) paye+=Number(c.avances[i].montant)||0;
+  var reste=Math.max(0,prix-paye), pct=prix>0?Math.round((paye/prix)*100):0;
+  document.getElementById("r-prix").textContent  = fmt(prix)+" DH";
+  document.getElementById("r-paye").textContent  = fmt(paye)+" DH";
+  document.getElementById("r-reste").textContent = reste>0?fmt(reste)+" DH":"Soldé ✓";
+  document.getElementById("r-reste").className   = "resume-val "+(reste>0?"red":"green");
+  document.getElementById("r-pct").textContent   = pct+"%";
+  document.getElementById("r-pfill").style.width = pct+"%";
+  document.getElementById("resume-section").style.display = "block";
+  if(reste>0) document.getElementById("badge-paiements").classList.add("on");
+}
+
+function renderPaiements() {
+  if(!currentClient){ document.getElementById("solde-empty").style.display="block"; return; }
+  var c=currentClient, prix=Number(c.prix)||0, paye=0;
+  if(c.avances) for(var i=0;i<c.avances.length;i++) paye+=Number(c.avances[i].montant)||0;
+  var reste=Math.max(0,prix-paye), pct=prix>0?Math.round((paye/prix)*100):0;
+  document.getElementById("sol-reste").innerHTML = reste>0?fmt(reste)+" <span>DH</span>":"Soldé <span>✓</span>";
+  document.getElementById("sol-prix").textContent = fmt(prix)+" DH";
+  document.getElementById("sol-paye").textContent = fmt(paye)+" DH";
+  document.getElementById("sol-pct").textContent  = pct+"%";
+  document.getElementById("sol-pfill").style.width = pct+"%";
+  document.getElementById("solde-section").style.display = "block";
+  var avances = c.avances||[];
+  var h = "";
+  if(avances.length>0) {
+    for(var i=0;i<avances.length;i++){
+      var v=avances[i];
+      h+="<div class='versement-item'><div class='versement-num'>"+(i+1)+"</div><div class='versement-body'><div class='versement-date'>📅 "+(v.date||"—")+"</div>"+(v.note?"<div class='versement-note'>"+v.note+"</div>":"")+"</div><div class='versement-montant'>+"+fmt(v.montant)+" <span>DH</span></div></div>";
+    }
+  } else { h="<div style='text-align:center;padding:16px;color:var(--gray);font-size:13px;'>Aucun versement</div>"; }
+  document.getElementById("versements-list").innerHTML = h;
+  document.getElementById("historique-section").style.display = "block";
+  document.getElementById("btn-pdf-recu").style.display = "block";
+}
+
+function renderStatutPermis() {
+  if(!currentClient) return;
+  var c=currentClient;
+  var statutLabels={"en-cours":"🔵 En cours · جارٍ","reussi":"✅ Réussi · ناجح","echoue":"❌ Échoué · رسب","abandonne":"⚫ Abandonné · متروك"};
+  document.getElementById("st-categorie").textContent   = c.categorie||"—";
+  document.getElementById("st-statut").textContent      = statutLabels[c.statut]||c.statut||"—";
+  document.getElementById("st-inscription").textContent = c.inscription||c.createdAt||"—";
+  document.getElementById("statut-section").style.display = "block";
+}
+
+/* ─── SÉANCES ─── */
+async function loadSeances() {
+  var el = document.getElementById("seances-list");
+  el.innerHTML = "<div class='empty-msg'><span class='spinner'></span></div>";
+  try {
+    var snap = await getDocs(collection(db,"planning_seances"));
+    var todayDate=new Date(), todayMs=new Date(todayDate.getFullYear(),todayDate.getMonth(),todayDate.getDate()).getTime();
+    var todayKey=todayDate.getFullYear()+"-"+(todayDate.getMonth()+1)+"-"+todayDate.getDate();
+    var upcoming=[], past=[];
+    snap.forEach(function(d){
+      var s=d.data(); s.id=d.id;
+      var sameSerial=currentEleve.serial&&s.serial&&s.serial.toLowerCase()===currentEleve.serial.toLowerCase();
+      var nomEleve=((currentEleve.prenom||"")+" "+(currentEleve.nom||"")).trim().toLowerCase();
+      var nomSeance=((s.prenom||"")+" "+(s.nom||"")).trim().toLowerCase();
+      var sameName=nomEleve&&nomSeance&&nomEleve===nomSeance;
+      if(sameSerial||sameName){
+        var parts=(s.dateKey||"").split("-");
+        if(parts.length===3){
+          var sDate=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+          s._date=sDate; s._isToday=s.dateKey===todayKey;
+          if(sDate.getTime()>=todayMs) upcoming.push(s); else past.push(s);
+        }
+      }
+    });
+    allSeances = upcoming.concat(past);
+    document.getElementById("stat-effectuees").textContent = past.length;
+    document.getElementById("stat-avenir").textContent     = upcoming.length;
+    if(upcoming.length>0){ var b=document.getElementById("badge-seances"); b.textContent=upcoming.length; b.classList.add("on"); }
+    var totalPrevu=past.length+upcoming.length;
+    if(totalPrevu>0){
+      var pctP=Math.round((past.length/totalPrevu)*100);
+      document.getElementById("permis-pct").textContent   = pctP+"%";
+      document.getElementById("ps-effectuees").textContent= past.length;
+      document.getElementById("ps-avenir").textContent    = upcoming.length;
+      document.getElementById("ps-total").textContent     = totalPrevu;
+      document.getElementById("permis-pfill").style.width = pctP+"%";
+      document.getElementById("permis-section").style.display="block";
+    }
+    renderNextSeanceAlert(upcoming, todayKey);
+    upcoming.sort(function(a,b){ return a._date-b._date||( a.heure<b.heure?-1:1); });
+    past.sort(function(a,b){ return b._date-a._date; });
+    el.innerHTML = upcoming.length===0
+      ? "<div class='empty-msg'><div class='em-ico'>📭</div>Aucune séance prévue<div class='em-ar'>لا توجد حصص قادمة</div></div>"
+      : buildSeancesList(upcoming, false);
+    if(past.length>0){ document.getElementById("past-seances-card").style.display="block"; document.getElementById("past-list").innerHTML=buildSeancesList(past,true); }
+  } catch(e){ el.innerHTML="<div class='empty-msg'>Erreur de chargement.</div>"; console.error(e); }
+}
+
+function renderNextSeanceAlert(upcoming, todayKey) {
+  var alertEl=document.getElementById("next-seance-alert");
+  if(!upcoming||upcoming.length===0){
+    alertEl.innerHTML="<div class='alert-card gray'><div class='alert-ico'>📭</div><div class='alert-body'><div class='alert-title'>Aucune séance prévue</div><div class='alert-sub ar'>لا توجد حصص قادمة</div></div></div>";
+    alertEl.style.display="block"; return;
+  }
+  var sorted=upcoming.slice().sort(function(a,b){ return a._date-b._date||(a.heure<b.heure?-1:1); });
+  var next=sorted[0], isToday=next._isToday;
+  var jour=next._date.getDate(), mois=MOIS[next._date.getMonth()];
+  var today0=new Date(); today0.setHours(0,0,0,0);
+  var diff=Math.round((next._date-today0)/(1000*60*60*24));
+  var cls=isToday?"orange":(diff<=2?"blue":"green");
+  var ico=isToday?"⏰":"📅";
+  var titre=isToday?"Séance aujourd'hui !":(diff===1?"Séance demain":"Prochaine séance");
+  var sous=jour+" "+mois+" · "+next.heure+" · Voiture "+next.voiture;
+  alertEl.innerHTML="<div class='alert-card "+cls+"'><div class='alert-ico'>"+ico+"</div><div class='alert-body'><div class='alert-title'>"+titre+"</div><div class='alert-sub'>"+sous+"</div></div></div>";
+  alertEl.style.display="block";
+}
+
+function buildSeancesList(list, isPast) {
+  var h="";
+  for(var i=0;i<list.length;i++){
+    var s=list[i], cls=isPast?"seance-item past":"seance-item";
+    var badge=isPast
+      ? "<span class='seance-badge' style='background:#f1f5f9;color:#64748b;'>Effectuée · تمت</span>"
+      : (s._isToday?"<span class='seance-badge today'>Aujourd'hui</span>":"<span class='seance-badge upcoming'>À venir</span>");
+    h+="<div class='"+cls+"'><div class='seance-date-box'><div class='s-day'>"+s._date.getDate()+"</div><div class='s-mon'>"+MOIS[s._date.getMonth()]+"</div></div><div class='seance-info'><div class='seance-heure'>🕐 "+s.heure+"</div><div class='seance-voiture'>Voiture "+s.voiture+"</div></div>"+badge+"</div>";
+  }
+  return h;
+}
+
+window.togglePast = function() {
+  pastOpen=!pastOpen;
+  document.getElementById("past-list").style.display=pastOpen?"block":"none";
+  document.getElementById("past-toggle-ico").textContent=pastOpen?"▲ Masquer":"▼ Voir";
+};
+
+/* ═══════════════════════════════════════════
+   SYSTÈME DE RÉSERVATION
+═══════════════════════════════════════════ */
+
+/* Charger toutes les réservations (pour anti-doublon) */
+async function loadAllResas() {
+  allResas = [];
+  try {
+    var snap = await getDocs(collection(db,"reservations"));
+    snap.forEach(function(d){ var r=d.data(); r.id=d.id; allResas.push(r); });
+  } catch(e) { console.warn("loadAllResas:", e); }
+}
+
+/* Charger MA réservation en attente */
+async function loadMyResa() {
+  myResa = null;
+  if(cancelTimerInt){ clearInterval(cancelTimerInt); cancelTimerInt=null; }
+  try {
+    var serial = (currentEleve.serial||"").toLowerCase();
+    var snap = await getDocs(collection(db,"reservations"));
+    snap.forEach(function(d){
+      var r=d.data(); r.id=d.id;
+      if((r.serial||"").toLowerCase()===serial && r.statut!=="annulee" && r.statut!=="refusee" && r.statut!=="effectuee") {
+        /* Prendre la plus récente si plusieurs (ne devrait pas arriver) */
+        if(!myResa || r.createdAt > myResa.createdAt) myResa=r;
+      }
+    });
+  } catch(e) { console.warn("loadMyResa:", e); }
+  renderMyResa();
+  updateBtnReserver();
+}
+
+function getCreatedMs(resa) {
+  var c = resa.createdAt;
+  if(!c) return Date.now();
+  if(typeof c.toDate === "function") return c.toDate().getTime(); /* Firestore Timestamp object */
+  if(typeof c.seconds === "number") return c.seconds * 1000;     /* {seconds, nanoseconds} plain object */
+  if(typeof c === "number") return c;                             /* already ms */
+  return Date.now();
+}
+
+function renderMyResa() {
+  var card = document.getElementById("my-resa-card");
+  var content = document.getElementById("my-resa-content");
+  if(!myResa){ card.style.display="none"; return; }
+  card.style.display="block";
+  var createdMs = getCreatedMs(myResa);
+  var deadline  = createdMs + 15*60*1000; /* 15 min pour annuler */
+  var canCancel = Date.now() < deadline;
+  var payantBadge = myResa.isUrgent ? "<span class='seance-badge payant' style='margin-left:6px;'>💰 +100 DH</span>" : "";
+  var h = "<div class='seance-item'>";
+  h += "<div class='seance-date-box'><div class='s-day'>"+myResa.dateKey.split("-")[2]+"</div><div class='s-mon'>"+MOIS[parseInt(myResa.dateKey.split("-")[1])-1]+"</div></div>";
+  h += "<div class='seance-info'><div class='seance-heure'>🕐 "+myResa.heure+" → "+(myResa.heureFin||heureFinCreneau(myResa.heure))+"</div><div class='seance-voiture'>Voiture "+myResa.voiture+" · 30 min</div></div>";
+  h += "<div style='display:flex;flex-direction:column;align-items:flex-end;gap:4px;'><span class='seance-badge upcoming'>✅ Confirmée</span>"+payantBadge+"</div>";
+  h += "</div>";
+  if(canCancel) {
+    h += "<div class='cancel-timer' id='cancel-timer-row'>";
+    h += "<span>⏱</span><span>Annulation possible : <span class='timer-val' id='timer-val'>—</span></span>";
+    h += "<button class='btn-cancel-resa' id='btn-cancel-resa' onclick='annulerResa()'>Annuler</button>";
+    h += "</div>";
+  } else {
+    h += "<div style='font-size:11px;color:var(--gray);text-align:center;margin-top:6px;'>⛔ Délai d'annulation expiré</div>";
+  }
+  content.innerHTML = h;
+  if(canCancel) startCancelTimer(deadline);
+}
+
+function startCancelTimer(deadline) {
+  if(cancelTimerInt) clearInterval(cancelTimerInt);
+  function tick() {
+    var remaining = deadline - Date.now();
+    var el = document.getElementById("timer-val");
+    var btnEl = document.getElementById("btn-cancel-resa");
+    if(!el) { clearInterval(cancelTimerInt); return; }
+    if(remaining<=0) {
+      el.textContent = "Expirée";
+      if(btnEl) { btnEl.disabled=true; btnEl.style.display="none"; }
+      clearInterval(cancelTimerInt);
+      var row=document.getElementById("cancel-timer-row");
+      if(row) row.innerHTML="<span>⛔</span><span style='color:var(--gray)'>Délai d'annulation expiré</span>";
+      return;
+    }
+    var m=Math.floor(remaining/60000), s=Math.floor((remaining%60000)/1000);
+    el.textContent = m+"m "+String(s).padStart(2,"0")+"s";
+  }
+  tick();
+  cancelTimerInt = setInterval(tick, 1000);
+}
+
+async function autoValiderResa() {
+  if(!myResa||myResa.statut!=="en-attente") return;
+  try {
+    await updateDoc(doc(db,"reservations",myResa.id), { statut:"validee", validatedAt: serverTimestamp() });
+    myResa.statut = "validee";
+    renderMyResa();
+    showToast("✅ Séance automatiquement validée !");
+    await loadSeances();
+  } catch(e) { console.warn("autoValider:", e); }
+}
+
+window.annulerResa = async function() {
+  if(!myResa) return;
+  var createdMs = getCreatedMs(myResa);
+  if(Date.now() - createdMs > 15*60*1000) { showToast("⛔ Délai d'annulation dépassé (15 min)"); return; }
+  try {
+    await deleteDoc(doc(db,"reservations",myResa.id));
+    myResa=null;
+    if(cancelTimerInt){ clearInterval(cancelTimerInt); cancelTimerInt=null; }
+    document.getElementById("my-resa-card").style.display="none";
+    updateBtnReserver();
+    showToast("🗑️ Réservation annulée");
+  } catch(e) { showToast("Erreur lors de l'annulation"); console.error(e); }
+};
+
+function updateBtnReserver() {
+  var btn = document.getElementById("btn-ouvrir-resa");
+  var hint = document.getElementById("resa-hint");
+  if(myResa && myResa.statut!=="annulee" && myResa.statut!=="refusee") {
+    btn.disabled=true;
+    btn.innerHTML="<span>🔒</span> Réservation déjà en cours";
+    hint.textContent="Vous ne pouvez réserver qu'une séance à l'avance";
+  } else {
+    btn.disabled=false;
+    btn.innerHTML="<span>➕</span> Réserver une séance";
+    hint.textContent="Horaires : 8h30–12h30 · 14h30–19h00";
+  }
+}
+
+/* ─── OUVRIR MODAL ─── */
+window.ouvrirModalResa = async function() {
+  if(myResa && myResa.statut!=="annulee" && myResa.statut!=="refusee") return;
+  resaStep=1; resaDate=null; resaDateKey=null; resaCreneau=null; resaVoiture=null; resaIsUrgent=false; resaUrgentOk=false;
+  var now=new Date(); calYear=now.getFullYear(); calMonth=now.getMonth();
+  await loadAllResas();
+  document.getElementById("modal-resa").classList.add("on");
+  renderModalStep();
+};
+
+window.fermerModalResa = function() {
+  document.getElementById("modal-resa").classList.remove("on");
+};
+
+/* Clic hors modal */
+document.getElementById("modal-resa").addEventListener("click", function(e){
+  if(e.target===this) fermerModalResa();
+});
+
+function renderModalStep() {
+  var c = document.getElementById("modal-resa-content");
+  if(resaStep===1) c.innerHTML = buildStepVoiture();
+  else if(resaStep===2) c.innerHTML = buildStepCalendrier();
+  else if(resaStep===3) c.innerHTML = buildStepCreneau();
+  else if(resaStep===4) c.innerHTML = buildStepConfirm();
+  attachStepEvents();
+}
+
+/* ─── STEP 1 : VOITURE ─── */
+function buildStepVoiture() {
+  var h="";
+  h+="<div class='steps'><div class='step active'></div><div class='step'></div><div class='step'></div><div class='step'></div></div>";
+  h+="<div class='step-label'>Étape 1 sur 4 — Choisissez la voiture · اختر السيارة</div>";
+  h+="<div class='modal-title'>🚗 Choisir la voiture</div>";
+  h+="<div class='modal-subtitle'>Chaque voiture a son propre planning</div>";
+  h+="<div class='voitures-grid' style='margin-bottom:20px;'>";
+  VOITURES.forEach(function(v){
+    var isSelected=resaVoiture===v;
+    h+="<button class='voiture-btn "+(isSelected?"selected":"")+"' data-v='"+v+"' style='padding:18px 12px;'>";
+    h+="<span class='v-ico'>🚗</span>";
+    h+="<div style='text-align:left;'><div style='font-weight:800;font-size:14px;'>Voiture "+v+"</div>";
+    h+="<div style='font-size:10px;color:var(--gray);margin-top:2px;font-weight:400;'>Voir les disponibilités</div></div>";
+    h+="</button>";
+  });
+  h+="</div>";
+  h+="<button class='btn-primary' id='btn-step1-next' "+(resaVoiture?"":"disabled")+">Voir le planning →</button>";
+  h+="<div style='text-align:center;margin-top:8px;'><button style='background:none;border:none;color:var(--gray);font-size:12px;cursor:pointer;' onclick='fermerModalResa()'>Annuler</button></div>";
+  return h;
+}
+
+/* ─── STEP 2 : CALENDRIER (selon voiture choisie) ─── */
+function buildStepCalendrier() {
+  var now=new Date();
+  var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  var firstDay=new Date(calYear,calMonth,1);
+  var lastDay=new Date(calYear,calMonth+1,0);
+  var startWday=firstDay.getDay();
+
+  /* Jours complets pour cette voiture (toutes les séances + resas la prennent) */
+  function isDayFullForVoiture(dateKey) {
+    /* Vérifie si tous les créneaux de la journée sont pris pour resaVoiture */
+    var takenSlots=[];
+    allResas.forEach(function(r){
+      if(r.dateKey===dateKey && r.voiture===resaVoiture && r.statut!=="annulee" && r.statut!=="refusee") takenSlots.push(r.heure);
+    });
+    allSeances.forEach(function(s){
+      if(s.dateKey===dateKey && s.voiture===resaVoiture) takenSlots.push(s.heure);
+    });
+    /* Si tous les créneaux du jour sont pris → complet */
+    var allCr=ALL_CRENEAUX;
+    var now2=new Date();
+    var available=allCr.filter(function(cr){
+      var dp=dateKey.split("-");
+      var crHM=cr.split(":");
+      var crDt=new Date(parseInt(dp[0]),parseInt(dp[1])-1,parseInt(dp[2]),parseInt(crHM[0]),parseInt(crHM[1]));
+      return crDt>now2 && takenSlots.indexOf(cr)===-1;
+    });
+    return available.length===0;
+  }
+
+  var h="";
+  h+="<div class='steps'><div class='step done'></div><div class='step active'></div><div class='step'></div><div class='step'></div></div>";
+  h+="<div class='step-label'>Étape 2 sur 4 — Choisissez une date · اختر التاريخ</div>";
+  h+="<div class='modal-title'>📅 Planning Voiture "+resaVoiture+"</div>";
+  h+="<div class='modal-subtitle'>Jours disponibles pour la Voiture "+resaVoiture+"</div>";
+  h+="<div class='cal-nav'>";
+  var prevDisabled=(calYear===now.getFullYear()&&calMonth<=now.getMonth())?"disabled":"";
+  h+="<button class='cal-nav-btn' id='cal-prev' "+prevDisabled+">‹</button>";
+  h+="<div class='cal-month'>"+MOIS_FULL[calMonth]+" "+calYear+"</div>";
+  h+="<button class='cal-nav-btn' id='cal-next'>›</button>";
+  h+="</div>";
+  h+="<div class='cal-grid'>";
+  ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"].forEach(function(j){ h+="<div class='cal-day-lbl'>"+j+"</div>"; });
+  for(var i=0;i<startWday;i++) h+="<div class='cal-day empty'></div>";
+  for(var d=1;d<=lastDay.getDate();d++){
+    var thisDate=new Date(calYear,calMonth,d);
+    var isPast=thisDate<today;
+    var dateKey=calYear+"-"+(calMonth+1)+"-"+d;
+    var isFull=!isPast && isDayFullForVoiture(dateKey);
+    var isSelected=resaDateKey===dateKey;
+    var cls="cal-day ";
+    if(isPast) cls+="past";
+    else if(isSelected) cls+="selected";
+    else if(isFull) cls+="full";
+    else cls+="available";
+    h+="<div class='"+cls+"' data-date='"+dateKey+"'>"+d+"</div>";
+  }
+  h+="</div>";
+  h+="<div style='display:flex;align-items:center;gap:8px;font-size:11px;color:var(--gray);margin-bottom:16px;flex-wrap:wrap;'>";
+  h+="<div style='width:12px;height:12px;border-radius:3px;background:var(--bg);border:1px solid var(--border);flex-shrink:0;'></div>Dispo &nbsp;";
+  h+="<div style='width:12px;height:12px;border-radius:3px;background:var(--blue);flex-shrink:0;'></div>Sélectionné &nbsp;";
+  h+="<div style='width:12px;height:12px;border-radius:3px;background:#fee2e2;flex-shrink:0;'></div>Complet";
+  h+="</div>";
+  h+="<div style='display:flex;gap:8px;'><button class='btn-primary' id='btn-step2-back' style='background:var(--bg);color:var(--text);box-shadow:none;'>← Voiture</button><button class='btn-primary' id='btn-step2-next' style='flex:2;' "+(resaDateKey?"":"disabled")+">Continuer →</button></div>";
+  return h;
+}
+
+/* ─── STEP 3 : CRÉNEAU (filtrés selon voiture choisie) ─── */
+function buildStepCreneau() {
+  var now=new Date();
+  var h="";
+  h+="<div class='steps'><div class='step done'></div><div class='step done'></div><div class='step active'></div><div class='step'></div></div>";
+  h+="<div class='step-label'>Étape 3 sur 4 — Choisissez l'heure · اختر الوقت</div>";
+  h+="<div class='modal-title'>🕐 Créneaux — Voiture "+resaVoiture+"</div>";
+  h+="<div class='modal-subtitle'>"+resaDateKey.split("-").reverse().join("/")+" · Durée : 30 min</div>";
+
+  /* Créneaux pris pour CETTE voiture ce jour */
+  function isSlotTakenForVoiture(heure) {
+    var taken=false;
+    allResas.forEach(function(r){
+      if(r.dateKey===resaDateKey && r.heure===heure && r.voiture===resaVoiture && r.statut!=="annulee" && r.statut!=="refusee") taken=true;
+    });
+    allSeances.forEach(function(s){
+      if(s.dateKey===resaDateKey && s.heure===heure && s.voiture===resaVoiture) taken=true;
+    });
+    return taken;
+  }
+
+  function renderCrGroup(label, creneaux) {
+    var out="<div class='creneaux-section'><div class='creneaux-label'>"+label+"</div><div class='creneaux-grid'>";
+    creneaux.forEach(function(cr){
+      var taken=isSlotTakenForVoiture(cr);
+      var dateParts=resaDateKey.split("-");
+      var crHM=cr.split(":");
+      var crDateTime=new Date(parseInt(dateParts[0]),parseInt(dateParts[1])-1,parseInt(dateParts[2]),parseInt(crHM[0]),parseInt(crHM[1]));
+      var diffMin=(crDateTime-now)/60000;
+      var isUrgent=diffMin>0 && diffMin<120;
+      var isPast=diffMin<=0;
+      var isSelected=resaCreneau===cr;
+      var disabled=taken||isPast;
+      var cls="creneau-btn"+(disabled?"":" available")+(isSelected?" selected":"")+(isUrgent&&!disabled?" urgent":"");
+      out+="<button class='"+cls+"' data-cr='"+cr+"' "+(disabled?"disabled":"")+">"+cr;
+      out+="<div class='cr-sub'>"+(taken?"🔒 Prise":(isPast?"Passé":(isUrgent?"💰 Urgent":heureFinCreneau(cr))))+"</div>";
+      out+="</button>";
+    });
+    out+="</div></div>";
+    return out;
+  }
+
+  h+=renderCrGroup("🌅 Matin", CRENEAUX_MATIN);
+  h+=renderCrGroup("🌆 Après-midi", CRENEAUX_APM);
+  h+="<div style='font-size:11px;color:var(--orange);background:#fff7ed;border-radius:10px;padding:8px 12px;margin-bottom:14px;'>💰 Urgent = moins de 2h à l'avance → +100 DH</div>";
+  h+="<div style='display:flex;gap:8px;'><button class='btn-primary' id='btn-step3-back' style='background:var(--bg);color:var(--text);box-shadow:none;'>← Date</button><button class='btn-primary' id='btn-step3-next' style='flex:2;' "+(resaCreneau?"":"disabled")+">Confirmer →</button></div>";
+  return h;
+}
+
+/* ─── STEP 4 : CONFIRMATION ─── */
+function buildStepConfirm() {
+  var dateParts=resaDateKey.split("-");
+  var crHM=resaCreneau.split(":");
+  var crDateTime=new Date(parseInt(dateParts[0]),parseInt(dateParts[1])-1,parseInt(dateParts[2]),parseInt(crHM[0]),parseInt(crHM[1]));
+  var diffMin=(crDateTime-new Date())/60000;
+  resaIsUrgent = diffMin>0 && diffMin<120;
+
+  var h="";
+  h+="<div class='steps'><div class='step done'></div><div class='step done'></div><div class='step done'></div><div class='step active'></div></div>";
+  h+="<div class='step-label'>Étape 4 sur 4 — Confirmez · تأكيد الحجز</div>";
+  h+="<div class='modal-title'>✅ Confirmer la réservation</div>";
+  h+="<div class='modal-subtitle'>Vérifiez les détails avant de confirmer</div>";
+  h+="<div class='confirm-box'>";
+  h+="<div class='confirm-row'><span class='confirm-lbl'>Voiture</span><span class='confirm-val'>🚗 Voiture "+resaVoiture+"</span></div>";
+  h+="<div class='confirm-row'><span class='confirm-lbl'>Date</span><span class='confirm-val'>"+dateParts[2]+"/"+dateParts[1]+"/"+dateParts[0]+"</span></div>";
+  h+="<div class='confirm-row'><span class='confirm-lbl'>Heure</span><span class='confirm-val'>"+resaCreneau+" → "+heureFinCreneau(resaCreneau)+"</span></div>";
+  h+="<div class='confirm-row'><span class='confirm-lbl'>Durée</span><span class='confirm-val'>30 minutes</span></div>";
+  if(resaIsUrgent) h+="<div class='confirm-row'><span class='confirm-lbl'>Supplément urgent</span><span class='confirm-val orange'>+100 DH</span></div>";
+  h+="<div class='confirm-row'><span class='confirm-lbl'>Annulation</span><span class='confirm-val'>Dans les 15 min</span></div>";
+  h+="</div>";
+  if(resaIsUrgent) {
+    h+="<label class='urgent-checkbox' id='urgent-cb-label'>";
+    h+="<input type='checkbox' id='urgent-cb'>";
+    h+="<div class='urgent-checkbox-label'><strong>⚠️ Séance urgente — +100 DH</strong>Réservée moins de 2h à l'avance. Un supplément de 100 DH sera ajouté à votre compte.</div>";
+    h+="</label>";
+  }
+  h+="<button class='btn-primary' id='btn-confirmer-resa' "+(resaIsUrgent?"disabled":"")+">🎯 Confirmer la réservation</button>";
+  h+="<div style='text-align:center;margin-top:8px;'><button style='background:none;border:none;color:var(--gray);font-size:12px;cursor:pointer;' onclick='fermerModalResa()'>Annuler</button></div>";
+  return h;
+}
+
+function heureFinCreneau(h) {
+  var p=h.split(":"), hh=parseInt(p[0]), mm=parseInt(p[1])+30;
+  if(mm>=60){ hh+=1; mm-=60; }
+  return (hh<10?"0":"")+hh+":"+(mm<10?"0":"")+mm;
+}
+
+/* ─── EVENTS ÉTAPES ─── */
+function attachStepEvents() {
+  /* Step 1 — Voiture */
+  document.querySelectorAll(".voiture-btn").forEach(function(el){
+    el.addEventListener("click",function(){
+      resaVoiture=this.dataset.v;
+      resaDateKey=null; resaDate=null; resaCreneau=null;
+      renderModalStep();
+    });
+  });
+  var s1next=document.getElementById("btn-step1-next");
+  if(s1next) s1next.addEventListener("click",function(){ if(resaVoiture){resaStep=2;renderModalStep();} });
+
+  /* Step 2 — Calendrier */
+  var prev=document.getElementById("cal-prev");
+  var next=document.getElementById("cal-next");
+  if(prev) prev.addEventListener("click",function(){ if(!this.disabled){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderModalStep(); }});
+  if(next) next.addEventListener("click",function(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderModalStep(); });
+  document.querySelectorAll(".cal-day.available, .cal-day.selected").forEach(function(el){
+    el.addEventListener("click",function(){
+      resaDateKey=this.dataset.date;
+      var parts=resaDateKey.split("-");
+      resaDate=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+      resaCreneau=null;
+      renderModalStep();
+    });
+  });
+  var s2back=document.getElementById("btn-step2-back");
+  var s2next=document.getElementById("btn-step2-next");
+  if(s2back) s2back.addEventListener("click",function(){ resaStep=1; resaDateKey=null; resaCreneau=null; renderModalStep(); });
+  if(s2next) s2next.addEventListener("click",function(){ if(resaDateKey){resaStep=3;renderModalStep();} });
+
+  /* Step 3 — Créneau */
+  document.querySelectorAll(".creneau-btn.available, .creneau-btn.urgent").forEach(function(el){
+    el.addEventListener("click",function(){
+      if(this.disabled) return;
+      resaCreneau=this.dataset.cr;
+      renderModalStep();
+    });
+  });
+  var s3back=document.getElementById("btn-step3-back");
+  var s3next=document.getElementById("btn-step3-next");
+  if(s3back) s3back.addEventListener("click",function(){ resaStep=2; resaCreneau=null; renderModalStep(); });
+  if(s3next) s3next.addEventListener("click",function(){ if(resaCreneau){resaStep=4;renderModalStep();} });
+
+  /* Step 4 — Confirmation */
+  var cb=document.getElementById("urgent-cb");
+  var btnConf=document.getElementById("btn-confirmer-resa");
+  if(cb && btnConf) {
+    cb.addEventListener("change",function(){ resaUrgentOk=this.checked; btnConf.disabled=!resaUrgentOk; });
+  }
+  if(btnConf) btnConf.addEventListener("click", confirmerResa);
+}
+
+/* ─── CONFIRMER RÉSERVATION ─── */
+async function confirmerResa() {
+  var btn=document.getElementById("btn-confirmer-resa");
+  if(btn) btn.disabled=true;
+  if(btn) btn.innerHTML="<span class='spinner'></span> Réservation...";
+
+  /* Vérification finale doublon */
+  await loadAllResas();
+  var doublon=false;
+  allResas.forEach(function(r){
+    if(r.dateKey===resaDateKey && r.heure===resaCreneau && r.voiture===resaVoiture && r.statut!=="annulee" && r.statut!=="refusee") doublon=true;
+  });
+  allSeances.forEach(function(s){ if(s.dateKey===resaDateKey && s.heure===resaCreneau && s.voiture===resaVoiture) doublon=true; });
+
+  if(doublon) {
+    showToast("⛔ Ce créneau/voiture vient d'être pris. Choisissez-en un autre.");
+    resaStep=2; resaCreneau=null; resaVoiture=null; renderModalStep(); return;
+  }
+
+  var src = currentClient||currentEleve;
+  var nomAff = src.prenom ? src.prenom+" "+(src.nom||"") : (src.nom||"—");
+
+  try {
+    var docRef = await addDoc(collection(db,"reservations"), {
+      serial:    (currentEleve.serial||"").toUpperCase(),
+      nom:       src.nom||"",
+      prenom:    src.prenom||"",
+      nomComplet:nomAff,
+      dateKey:   resaDateKey,
+      heure:     resaCreneau,
+      heureFin:  heureFinCreneau(resaCreneau),
+      voiture:   resaVoiture,
+      isUrgent:  resaIsUrgent,
+      statut:    "validee",
+      createdAt: serverTimestamp(),
+      validatedAt: serverTimestamp(),
+      source:    "eleve"
+    });
+    fermerModalResa();
+    showToast("🎉 Réservation enregistrée !");
+    await loadMyResa();
+    await loadSeances();
+    switchTab("seances");
+  } catch(e) {
+    showToast("Erreur lors de la réservation");
+    console.error(e);
+    if(btn){ btn.disabled=false; btn.innerHTML="🎯 Confirmer la réservation"; }
+  }
+}
+
+/* ─── PDF REÇU ─── */
+window.genererPdfRecu = function() {
+  if(!currentClient) return;
+  var c=currentClient, prix=Number(c.prix)||0, paye=0;
+  if(c.avances) for(var i=0;i<c.avances.length;i++) paye+=Number(c.avances[i].montant)||0;
+  var reste=Math.max(0,prix-paye), pct=prix>0?Math.round((paye/prix)*100):0;
+  var nomAff=c.prenom?c.prenom+" "+(c.nom||""):(c.nom||"—");
+  var today=new Date(), dateStr=today.getDate()+"/"+(today.getMonth()+1)+"/"+today.getFullYear();
+  var vRows="";
+  if(c.avances&&c.avances.length>0){ for(var i=0;i<c.avances.length;i++){ var v=c.avances[i]; vRows+="<tr><td style='padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;'>"+(i+1)+"</td><td style='padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:12px;'>"+(v.date||"—")+"</td><td style='padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#10b981;font-weight:700;font-size:12px;'>+"+fmt(v.montant)+" DH</td><td style='padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:11px;color:#94a3b8;'>"+(v.note||"—")+"</td></tr>"; }}
+  else { vRows="<tr><td colspan='4' style='padding:12px;text-align:center;color:#94a3b8;font-size:12px;'>Aucun versement</td></tr>"; }
+  var html="<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Reçu — "+nomAff+"</title><style>body{font-family:Arial,sans-serif;padding:32px;max-width:600px;margin:0 auto;color:#1e293b;}.brand{font-size:20px;font-weight:900;color:#1a56db;}.brand span{color:#f97316;}table{width:100%;border-collapse:collapse;}th{background:#1a56db;color:white;padding:10px;font-size:11px;}@media print{body{padding:16px;}}</style></head><body>";
+  html+="<div style='display:flex;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #e2e8f0;'><div><div class='brand'>Achkoun<span>E</span></div></div><div style='font-size:12px;color:#64748b;'>Reçu de paiement<br>"+dateStr+"</div></div>";
+  html+="<h2 style='color:#1e293b;margin-bottom:4px;'>"+nomAff+"</h2><p style='color:#64748b;font-size:13px;margin-bottom:20px;'>N° Auth : "+(c.serial||"—")+" | Catégorie : "+(c.categorie||"—")+"</p>";
+  html+="<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;'><div style='background:#f8fafc;border-radius:8px;padding:12px;'><div style='font-size:10px;color:#94a3b8;font-weight:700;margin-bottom:4px;'>PRIX TOTAL</div><div style='font-size:16px;font-weight:800;color:#1a56db;'>"+fmt(prix)+" DH</div></div><div style='background:#f8fafc;border-radius:8px;padding:12px;'><div style='font-size:10px;color:#94a3b8;font-weight:700;margin-bottom:4px;'>PAYÉ</div><div style='font-size:16px;font-weight:800;color:#10b981;'>"+fmt(paye)+" DH</div></div><div style='background:#f8fafc;border-radius:8px;padding:12px;'><div style='font-size:10px;color:#94a3b8;font-weight:700;margin-bottom:4px;'>RESTE</div><div style='font-size:16px;font-weight:800;color:"+(reste>0?"#ef4444":"#10b981")+"'>"+(reste>0?fmt(reste)+" DH":"Soldé ✓")+"</div></div><div style='background:#f8fafc;border-radius:8px;padding:12px;'><div style='font-size:10px;color:#94a3b8;font-weight:700;margin-bottom:4px;'>PROGRESSION</div><div style='font-size:16px;font-weight:800;'>"+pct+"%</div></div></div>";
+  html+="<table><thead><tr><th>#</th><th>Date</th><th>Montant</th><th>Note</th></tr></thead><tbody>"+vRows+"</tbody></table>";
+  html+="<p style='text-align:center;font-size:11px;color:#94a3b8;margin-top:20px;border-top:1px solid #e2e8f0;padding-top:16px;'>AchkounE · "+dateStr+"</p></body></html>";
+  var w=window.open("","_blank"); w.document.write(html); w.document.close(); w.onload=function(){ w.print(); };
+  showToast("Reçu ouvert — prêt à imprimer 🖨️");
+};
+
+/* ─── LOGOUT ─── */
+window.logout = function() {
+  currentEleve=null; currentClient=null; allSeances=[]; allResas=[]; pastOpen=false; myResa=null;
+  if(cancelTimerInt){ clearInterval(cancelTimerInt); cancelTimerInt=null; }
+  document.getElementById("app").className="";
+  document.getElementById("login-screen").className="on";
+  document.getElementById("serial-input").value="";
+  document.getElementById("login-err").textContent="";
+  document.getElementById("past-seances-card").style.display="none";
+  document.getElementById("my-resa-card").style.display="none";
+  document.getElementById("stat-effectuees").textContent="—";
+  document.getElementById("stat-avenir").textContent="—";
+  document.getElementById("badge-seances").classList.remove("on");
+  document.getElementById("badge-paiements").classList.remove("on");
+  resetLoginBtn(); switchTab("accueil");
+};
+
+/* ─── TOAST ─── */
+window.showToast = function(msg) {
+  var t=document.getElementById("toast"); t.textContent=msg; t.className="toast on";
+  setTimeout(function(){ t.className="toast"; },2800);
+};
+
+function fmt(n) { return Number(n).toLocaleString("fr-FR"); }
+
+</script>
+</body>
+</html>
