@@ -358,7 +358,7 @@ header{background:linear-gradient(135deg,var(--blue),var(--blue2));padding:14px 
 
 /* MODAL CHANGER PACK */
 .pack-choice-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
-.pack-choice-btn{border-radius:14px;padding:14px 16px;border:2px solid transparent;cursor:pointer;font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:12px;transition:all 0.15s;text-align:left;}
+.pack-choice-btn{border-radius:14px;padding:14px 16px;border:2px solid transparent;font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:12px;transition:all 0.15s;text-align:left;}
 .pack-choice-btn.silver{background:#f8fafc;border-color:#e2e8f0;}
 .pack-choice-btn.gold{background:#fffbeb;border-color:#fde68a;}
 .pack-choice-btn.platinum{background:#f5f3ff;border-color:#ddd6fe;}
@@ -696,11 +696,11 @@ var VOITURES = ["1","2"];
 
 /* ─── PACKS ─── */
 var PACKS = {
-  "silver":   { label:"Silver",   icon:"🥈", seances:10, color:"silver" },
-  "gold":     { label:"Gold",     icon:"🥇", seances:20, color:"gold"   },
-  "platinum": { label:"Platinum", icon:"💎", seances:30, color:"platinum"}
+  "silver":   { label:"Silver",   icon:"🥈", seances:12, color:"silver",   nextPack:"gold"     },
+  "gold":     { label:"Gold",     icon:"🥇", seances:22, color:"gold",     nextPack:"platinum"  },
+  "platinum": { label:"Platinum", icon:"💎", seances:17, color:"platinum",  nextPack:null        }
 };
-var DEFAULT_PACK_SEANCES = 20; /* fallback si pack non défini */
+var DEFAULT_PACK_SEANCES = 12; /* fallback si pack non défini */
 var currentPackKey = null;   /* clé du pack actif : "silver"|"gold"|"platinum" */
 
 function getPackInfo() {
@@ -773,35 +773,124 @@ function renderPackSection(pastCount, upcoming) {
     h += "<span class='pack-status-badge'>🔄 Séance libérée</span>";
   } else {
     var restant = max - used;
-    h += "<span class='pack-status-badge'>✅ "+restant+" séance"+(restant>1?"s":"")+" restante"+(restant>1?"s":"")+"</span>";
+    var warningClass = restant<=2 ? "color:#e55;" : "";
+    h += "<span class='pack-status-badge' style='"+warningClass+"'>"+( restant<=2?"⚠️":"✅")+" "+restant+" séance"+(restant>1?"s":"")+" restante"+(restant>1?"s":"")+"</span>";
   }
   h += "<button class='btn-change-pack' onclick='ouvrirModalPack()'>✏️ Changer</button>";
   h += "</div>";
   if(!bookStatus.ok){
-    h += "<div class='pack-locked-msg'>🚫 Quota de "+max+" séances atteint. Changez de pack pour continuer.</div>";
+    h += "<div class='pack-locked-msg'>🚫 Quota de "+max+" séances atteint.</div>";
+    /* Suggestion pack supérieur avec demande */
+    var nextKey = p.nextPack;
+    if(nextKey && PACKS[nextKey]){
+      var np=PACKS[nextKey];
+      var gain=np.seances-max;
+      var demandeEnCours = pendingUpgradeKey === nextKey;
+      h += "<div style='margin-top:8px;border-radius:12px;padding:12px;background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:1.5px solid #c7d2fe;position:relative;z-index:1;'>";
+      h += "<div style='display:flex;align-items:center;gap:10px;'>";
+      h += "<div style='font-size:24px;'>"+np.icon+"</div>";
+      h += "<div style='flex:1;'>";
+      h += "<div style='font-size:12px;font-weight:800;color:#3730a3;'>Pack "+np.label+" disponible</div>";
+      h += "<div style='font-size:11px;color:#6366f1;margin-top:2px;font-weight:600;'>+"+gain+" séances supplémentaires ("+np.seances+" au total)</div>";
+      h += "</div>";
+      if(demandeEnCours){
+        h += "<span style='background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:6px 10px;border-radius:10px;white-space:nowrap;'>⏳ En attente</span>";
+      } else {
+        h += "<button onclick='demanderUpgrade(\""+nextKey+"\")' style='background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;border-radius:10px;padding:8px 12px;font-family:Poppins,sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;'>Demander →</button>";
+      }
+      h += "</div>";
+      if(demandeEnCours){
+        h += "<div style='margin-top:8px;font-size:11px;color:#92400e;font-weight:600;text-align:center;'>✉️ Demande envoyée à l'admin — en attente de validation</div>";
+      }
+      h += "</div>";
+    }
   } else if(bookStatus.renewed){
     h += "<div class='pack-available-msg'>🎉 Votre séance est terminée — vous pouvez réserver à nouveau !</div>";
+  } else {
+    /* Suggestion douce si peu de séances restantes */
+    var restantNow = max - used;
+    var nextKeySoft = p.nextPack;
+    if(restantNow<=3 && nextKeySoft && PACKS[nextKeySoft]){
+      var npSoft=PACKS[nextKeySoft];
+      var demandeEnCoursSoft = pendingUpgradeKey === nextKeySoft;
+      h += "<div style='margin-top:8px;border-radius:12px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;position:relative;z-index:1;display:flex;align-items:center;gap:10px;'>";
+      h += "<div style='font-size:18px;'>"+npSoft.icon+"</div>";
+      h += "<div style='flex:1;'><div style='font-size:11px;font-weight:700;color:#92400e;'>Plus que "+restantNow+" séance"+(restantNow>1?"s":"")+" !</div><div style='font-size:11px;color:#b45309;font-weight:600;'>Pack "+npSoft.label+" · "+npSoft.seances+" séances</div></div>";
+      if(demandeEnCoursSoft){
+        h += "<span style='background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:5px 8px;border-radius:8px;white-space:nowrap;'>⏳ En attente</span>";
+      } else {
+        h += "<button onclick='demanderUpgrade(\""+nextKeySoft+"\")' style='background:#f59e0b;color:white;border:none;border-radius:8px;padding:6px 10px;font-family:Poppins,sans-serif;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;'>Demander →</button>";
+      }
+      h += "</div>";
+    }
   }
   h += "</div>";
   el.innerHTML = h;
   el.style.display = "block";
 
-  /* Mini résumé pack sur l'accueil */
+  /* Mini résumé pack sur l'accueil — version enrichie avec upsell */
   var elA = document.getElementById("pack-accueil-section");
   if(elA) {
     if(!currentPackKey || !p){
       elA.style.display="none";
     } else {
-      var aH = "<div style='background:white;border-radius:16px;padding:12px 16px;box-shadow:var(--shadow);margin-bottom:14px;display:flex;align-items:center;gap:12px;cursor:pointer;' onclick=\"switchTab('seances')\">";
-      var bcolors={silver:"#f1f5f9",gold:"#fef3c7",platinum:"#ede9fe"};
+      var bcolors={silver:"linear-gradient(135deg,#e2e8f0,#f8fafc)",gold:"linear-gradient(135deg,#fef3c7,#fffbeb)",platinum:"linear-gradient(135deg,#ede9fe,#f5f3ff)"};
+      var borders={silver:"#cbd5e1",gold:"#fbbf24",platinum:"#8b5cf6"};
       var tcolors={silver:"#475569",gold:"#92400e",platinum:"#5b21b6"};
-      aH += "<div style='width:40px;height:40px;border-radius:12px;background:"+bcolors[p.color]+";display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;'>"+p.icon+"</div>";
-      aH += "<div style='flex:1;'>";
-      aH += "<div style='font-size:12px;font-weight:800;color:"+tcolors[p.color]+";'>Pack "+p.label+"</div>";
-      aH += "<div style='font-size:10px;color:var(--gray);margin-top:2px;font-weight:600;'>"+used+" / "+max+" séances · "+pct+"%</div>";
-      aH += "<div style='height:4px;background:#e2e8f0;border-radius:4px;margin-top:5px;overflow:hidden;'><div style='height:100%;width:"+pct+"%;border-radius:4px;background:"+tcolors[p.color]+";transition:width 0.5s;'></div></div>";
+      var barcolors={silver:"linear-gradient(90deg,#64748b,#94a3b8)",gold:"linear-gradient(90deg,#f59e0b,#fbbf24)",platinum:"linear-gradient(90deg,#7c3aed,#a78bfa)"};
+      var restantA = max - used;
+      var isQuotaFull = !bookStatus.ok;
+      var isAlmostFull = !isQuotaFull && restantA<=3;
+
+      var aH = "<div style='border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px;background:"+bcolors[p.color]+";border:2px solid "+borders[p.color]+";position:relative;overflow:hidden;'>";
+      
+      /* Déco */
+      aH += "<div style='position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:"+tcolors[p.color]+";opacity:0.08;'></div>";
+      
+      /* Ligne titre */
+      aH += "<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:relative;'>";
+      aH += "<div style='display:flex;align-items:center;gap:10px;'>";
+      aH += "<div style='font-size:26px;'>"+p.icon+"</div>";
+      aH += "<div><div style='font-size:15px;font-weight:900;color:"+tcolors[p.color]+";'>Pack "+p.label+"</div>";
+      aH += "<div style='font-size:10px;color:var(--gray);font-weight:600;margin-top:1px;'>"+used+" / "+max+" séances utilisées</div></div>";
       aH += "</div>";
-      aH += "<div style='font-size:18px;color:var(--gray);'>›</div>";
+      if(isQuotaFull){
+        aH += "<span style='background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;'>🔒 Quota atteint</span>";
+      } else {
+        var badgeBg=isAlmostFull?"#fff7ed":"#f0fdf4";
+        var badgeTxt=isAlmostFull?"#9a3412":"#166534";
+        aH += "<span style='background:"+badgeBg+";color:"+badgeTxt+";font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;'>"+(isAlmostFull?"⚠️ ":"✅ ")+restantA+" restante"+(restantA>1?"s":"")+"</span>";
+      }
+      aH += "</div>";
+
+      /* Barre progression */
+      aH += "<div style='position:relative;'>";
+      aH += "<div style='display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:"+tcolors[p.color]+";margin-bottom:4px;'><span>Progression</span><span>"+pct+"%</span></div>";
+      aH += "<div style='height:8px;border-radius:6px;overflow:hidden;background:rgba(0,0,0,0.08);'>";
+      aH += "<div style='height:100%;width:"+pct+"%;border-radius:6px;background:"+barcolors[p.color]+";transition:width 0.6s;'></div></div>";
+      aH += "</div>";
+
+      /* Suggestion pack supérieur */
+      var nextKeyA = p.nextPack;
+      if(nextKeyA && PACKS[nextKeyA] && (isQuotaFull || isAlmostFull)){
+        var npA = PACKS[nextKeyA];
+        var gainA = npA.seances - max;
+        var demandeA = pendingUpgradeKey === nextKeyA;
+        aH += "<div style='margin-top:10px;background:white;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);'>";
+        aH += "<div style='font-size:20px;'>"+npA.icon+"</div>";
+        aH += "<div style='flex:1;'>";
+        aH += "<div style='font-size:11px;font-weight:800;color:#1e293b;'>Pack "+npA.label+"</div>";
+        aH += "<div style='font-size:10px;color:var(--gray);font-weight:600;margin-top:1px;'>+"+gainA+" séances · "+npA.seances+" au total</div>";
+        aH += "</div>";
+        if(demandeA){
+          aH += "<span style='background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:6px 10px;border-radius:10px;white-space:nowrap;'>⏳ Demande envoyée</span>";
+        } else {
+          aH += "<button onclick='demanderUpgrade(\""+nextKeyA+"\")' style='background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;border:none;border-radius:10px;padding:8px 14px;font-family:Poppins,sans-serif;font-size:11px;font-weight:700;cursor:pointer;'>Demander →</button>";
+        }
+        aH += "</div>";
+      }
+
+      aH += "<div style='display:flex;justify-content:center;margin-top:10px;position:relative;'><button onclick=\"switchTab('seances')\" style='background:none;border:none;font-family:Poppins,sans-serif;font-size:11px;color:"+tcolors[p.color]+";font-weight:700;cursor:pointer;'>Voir mes séances →</button></div>";
       aH += "</div>";
       elA.innerHTML = aH;
       elA.style.display = "block";
@@ -809,7 +898,7 @@ function renderPackSection(pastCount, upcoming) {
   }
 }
 
-/* ─── MODAL PACK ─── */
+/* ─── MODAL PACK → info seulement, pas de changement libre ─── */
 window.ouvrirModalPack = function() {
   var el = document.getElementById("modal-pack-content");
   var pastCount = parseInt(document.getElementById("stat-effectuees").textContent)||0;
@@ -817,27 +906,37 @@ window.ouvrirModalPack = function() {
   var upcomingNow3 = allSeances.filter(function(s){ return s._date && s._date >= todayMs4; });
   var used = pastCount + upcomingNow3.length;
 
-  var h = "<div class='modal-title'>🎯 Choisir un pack</div>";
-  h += "<div class='modal-subtitle'>Votre pack détermine le nombre de séances incluses</div>";
+  var h = "<div class='modal-title'>🎯 Mon Pack</div>";
+  h += "<div class='modal-subtitle'>Pour changer de pack, envoyez une demande à l'admin</div>";
   h += "<div class='pack-choice-grid'>";
   Object.keys(PACKS).forEach(function(key){
     var p = PACKS[key];
     var isActive = currentPackKey === key;
-    var restant = Math.max(0, p.seances - used);
-    var statusTxt = used > p.seances
-      ? "<span style='color:var(--red);font-size:10px;font-weight:700;'>⚠️ Quota dépassé</span>"
-      : "<span style='color:var(--green);font-size:10px;font-weight:700;'>"+restant+" séance"+(restant>1?"s":"")+" restante"+(restant>1?"s":"")+"</span>";
-    h += "<button class='pack-choice-btn "+p.color+(isActive?" active":"")+"' onclick='choisirPack(\""+key+"\")'>";
+    var isPending = pendingUpgradeKey === key;
+    var canRequest = !isActive && !isPending;
+    /* Niveau supérieur uniquement */
+    var packOrder = ["silver","gold","platinum"];
+    var currentIdx = packOrder.indexOf(currentPackKey);
+    var keyIdx = packOrder.indexOf(key);
+    var isUpgrade = keyIdx > currentIdx;
+
+    h += "<div class='pack-choice-btn "+p.color+"' style='cursor:default;"+(isActive?"outline:3px solid var(--blue);":"")+"'>";
     h += "<span class='pc-icon'>"+p.icon+"</span>";
     h += "<div class='pc-body'>";
-    h += "<div style='display:flex;align-items:center;gap:6px;'><div class='pc-name'>Pack "+p.label+"</div>"+(isActive?"<span style='font-size:10px;background:var(--blue);color:white;border-radius:10px;padding:1px 7px;font-weight:700;'>Actuel</span>":"")+"</div>";
-    h += "<div class='pc-seances'>"+p.seances+" séances · "+statusTxt+"</div>";
+    h += "<div style='display:flex;align-items:center;gap:6px;flex-wrap:wrap;'><div class='pc-name'>Pack "+p.label+"</div>";
+    if(isActive) h += "<span style='font-size:10px;background:var(--blue);color:white;border-radius:10px;padding:1px 7px;font-weight:700;'>Actuel</span>";
+    if(isPending) h += "<span style='font-size:10px;background:#fef3c7;color:#92400e;border-radius:10px;padding:1px 7px;font-weight:700;'>⏳ En attente</span>";
     h += "</div>";
-    h += "</button>";
+    h += "<div class='pc-seances'>"+p.seances+" séances</div>";
+    h += "</div>";
+    if(isUpgrade && canRequest){
+      h += "<button onclick='demanderUpgrade(\""+key+"\")' style='background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;border:none;border-radius:10px;padding:7px 12px;font-family:Poppins,sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;'>Demander</button>";
+    }
+    h += "</div>";
   });
   h += "</div>";
-  h += "<div style='font-size:11px;color:var(--gray);text-align:center;padding:0 8px 8px;'>Séances déjà utilisées : <strong>"+used+"</strong></div>";
-  h += "<div style='text-align:center;'><button style='background:none;border:none;color:var(--gray);font-size:12px;cursor:pointer;' onclick='fermerModalPack()'>Annuler</button></div>";
+  h += "<div style='background:#f8fafc;border-radius:12px;padding:12px;font-size:11px;color:var(--gray);text-align:center;margin-bottom:12px;'>ℹ️ L'admin validera votre demande et vous en serez informé</div>";
+  h += "<div style='text-align:center;'><button style='background:none;border:none;color:var(--gray);font-size:12px;cursor:pointer;' onclick='fermerModalPack()'>Fermer</button></div>";
   el.innerHTML = h;
   document.getElementById("modal-pack").classList.add("on");
 };
@@ -850,23 +949,57 @@ document.getElementById("modal-pack").addEventListener("click", function(e){
   if(e.target===this) fermerModalPack();
 });
 
-window.choisirPack = async function(key) {
+/* ─── DEMANDE UPGRADE (élève → Firestore → admin valide) ─── */
+var pendingUpgradeKey = null; /* clé du pack demandé en attente */
+
+window.demanderUpgrade = async function(key) {
   if(!PACKS[key]) return;
-  currentPackKey = key;
-  /* Sauvegarder dans Firestore si on a la ref client */
-  if(currentClient && currentClient.id) {
-    try {
-      await updateDoc(doc(db,"clients",currentClient.id), { pack: key });
-      currentClient.pack = key;
-    } catch(e) { console.warn("Sauvegarde pack:", e.message); }
+  if(!currentEleve) return;
+  if(pendingUpgradeKey === key){ showToast("⏳ Demande déjà envoyée !"); return; }
+
+  try {
+    var src = currentClient || currentEleve;
+    var nomAff = src.prenom ? src.prenom+" "+(src.nom||"") : (src.nom||"—");
+    await addDoc(collection(db,"demandes_upgrade"), {
+      serial:       (currentEleve.serial||"").toUpperCase(),
+      nomComplet:   nomAff,
+      packActuel:   currentPackKey || "—",
+      packDemande:  key,
+      statut:       "en_attente",
+      createdAt:    serverTimestamp(),
+      createdAtMs:  Date.now()
+    });
+    pendingUpgradeKey = key;
+    fermerModalPack();
+    /* Re-render les sections */
+    var pastCnt = parseInt(document.getElementById("stat-effectuees").textContent)||0;
+    var todayNow = new Date(); todayNow.setHours(0,0,0,0);
+    var upNow = allSeances.filter(function(s){ return s._date && s._date >= todayNow; });
+    renderPackSection(pastCnt, upNow);
+    showToast("✅ Demande envoyée à l'admin !");
+  } catch(e) {
+    showToast("Erreur lors de l'envoi de la demande");
+    console.error(e);
   }
-  fermerModalPack();
-  /* Re-render avec les données actuelles */
-  var pastCount = parseInt(document.getElementById("stat-effectuees").textContent)||0;
-  renderPackSection(pastCount, allSeances.filter(function(s){ return s._date >= new Date(new Date().setHours(0,0,0,0)); }));
-  updateBtnReserver();
-  showToast("✅ Pack "+PACKS[key].label+" activé !");
 };
+
+/* Charger une éventuelle demande en attente au login */
+async function loadPendingUpgrade(serial) {
+  pendingUpgradeKey = null;
+  try {
+    var q = query(
+      collection(db,"demandes_upgrade"),
+      where("serial","==",serial.toUpperCase()),
+      where("statut","==","en_attente")
+    );
+    var snap = await getDocs(q);
+    if(!snap.empty) {
+      snap.forEach(function(d){
+        pendingUpgradeKey = d.data().packDemande || null;
+      });
+    }
+  } catch(e) { console.warn("loadPendingUpgrade:", e); }
+}
 
 var currentEleve  = null;
 var currentClient = null;
@@ -1020,6 +1153,7 @@ async function enterApp() {
   renderResumePaiement();
   renderPaiements();
   renderStatutPermis();
+  await loadPendingUpgrade((currentEleve.serial||"").toUpperCase());
   await loadSeances();
   await loadMyResa();
 }
@@ -1765,7 +1899,7 @@ window.genererPdfRecu = function() {
 /* ─── LOGOUT ─── */
 window.logout = function() {
   currentEleve=null; currentClient=null; allSeances=[]; allSeancesGlobal=[]; allResas=[]; pastOpen=false; myResa=null;
-  currentPackKey=null;
+  currentPackKey=null; pendingUpgradeKey=null;
   if(cancelTimerInt){ clearInterval(cancelTimerInt); cancelTimerInt=null; }
   document.getElementById("app").className="";
   document.getElementById("login-screen").className="on";
